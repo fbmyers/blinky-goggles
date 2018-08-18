@@ -48,6 +48,49 @@ Adafruit_NeoPixel neopixel2 = Adafruit_NeoPixel();
 BLEDis  bledis;
 BLEUart bleuart;
 
+
+///////
+// blinky vars from greg...
+
+// define universal constants
+const float pi = 3.14159; 
+const float tau = pi*2;
+
+// define global parameters
+const int pause = 20;
+const int PIN = 3;
+const int NPIN = 16;
+const byte VALMAX = 31;
+const byte VALMIN = 3;
+const float DTHETA = tau/64.;
+
+// define derived parameters
+const byte VALAVG = ((float)VALMAX + (float)VALMIN)/2.0;
+const byte VALAMP = (float)VALMAX - (((float)VALMAX + (float)VALMIN)/2.0);
+
+// initialize arrays of 0-255 values for brightness and colors
+byte vals[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte sats[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte hues[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+boolean reset;
+
+byte valSpinN = 1;
+byte valSpinIncr = 1;
+
+byte valSpinVals[]  = {0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38};
+byte valSpinSteps[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte valSpinInds[]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+float theta;
+float dtheta = tau/64.;
+byte j;
+
+byte nCycles;
+
+
+
+
 void setup()
 {
   Serial.begin(115200);
@@ -78,6 +121,12 @@ void setup()
 
   // Set up and start advertising
   startAdv();
+
+  // Setup Neopixels
+  setupNeopixels();
+  
+  // Setup blinky
+  setupSpinner();
 }
 
 void startAdv(void)
@@ -116,7 +165,7 @@ void connect_callback(uint16_t conn_handle)
   Serial.print("Connected to ");
   Serial.println(central_name);
 
-  Serial.println("Please select the 'neopixel1s' tab, click 'Connect' and have fun");
+  Serial.println("Please select the 'neopixels' tab, click 'Connect' and have fun");
 }
 
 void loop()
@@ -159,8 +208,9 @@ void loop()
 
     }
   }
-  else { // not connected, so do some other stuff
-
+  else { // Run Greg's routine
+      Serial.println("Running auto blinky...");
+      updateSpinner();
   }
 }
 
@@ -197,40 +247,38 @@ void commandVersion() {
   sendResponse(NEOPIXEL_VERSION_STRING);
 }
 
-void commandSetup() {
-  Serial.println(F("Command: Setup"));
+#define NUM_LEDS 16
 
-  width = bleuart.read();
-  height = bleuart.read();
-  stride = bleuart.read();
-  componentsValue = bleuart.read();
-  is400Hz = bleuart.read();
+void setupNeopixels() {
+
+  stride = 8;
+  is400Hz = false; 
 
   neoPixelType pixelType;
-  pixelType = componentsValue + (is400Hz ? NEO_KHZ400 : NEO_KHZ800);
+  pixelType = NEO_GRB + NEO_KHZ800;
 
-  components = (componentsValue == NEO_RGB || componentsValue == NEO_RBG || componentsValue == NEO_GRB || componentsValue == NEO_GBR || componentsValue == NEO_BRG || componentsValue == NEO_BGR) ? 3:4;
   
-  Serial.printf("\tsize: %dx%d\n", width, height);
-  Serial.printf("\tstride: %d\n", stride);
-  Serial.printf("\tpixelType %d\n", pixelType);
-  Serial.printf("\tcomponents: %d\n", components);
-
   if (pixelBuffer != NULL) {
       delete[] pixelBuffer;
   }
 
-  uint32_t size = width*height;
-  pixelBuffer = new uint8_t[size*components];
-  neopixel1.updateLength(size);
+  pixelBuffer = new uint8_t[NUM_LEDS*3]; //each EYE is 16 LEDs
+  
+  neopixel1.updateLength(NUM_LEDS);
   neopixel1.updateType(pixelType);
   neopixel1.setPin(LEFT_PIN);
 
-  neopixel2.updateLength(size);
+  neopixel2.updateLength(NUM_LEDS);
   neopixel2.updateType(pixelType);
   neopixel2.setPin(RIGHT_PIN);
   
   // Done
+  //sendResponse("OK");
+}
+
+//deprecated, but may be required for app to work...
+void commandSetup() {
+  setupNeopixels();
   sendResponse("OK");
 }
 
