@@ -31,6 +31,9 @@
 #define NEOPIXEL_VERSION_STRING "Neopixel v2.0"
 #define LEFT_PIN                     7   /* Pin used to drive the neopixel1s */
 #define RIGHT_PIN                     16   /* Pin used to drive the neopixel1s */
+#define REMOTE_COMMON  A5
+#define REMOTE_BUTTON_1 A4
+#define REMOTE_BUTTON_2 A3
 
 #define MAXCOMPONENTS  4
 uint8_t *pixelBuffer = NULL;
@@ -127,6 +130,13 @@ void setup()
   
   // Setup blinky
   setupSpinner();
+
+  // Setup button
+  pinMode(REMOTE_BUTTON_1, INPUT_PULLUP);
+  pinMode(REMOTE_BUTTON_2, INPUT_PULLUP);
+  pinMode(REMOTE_COMMON, OUTPUT);
+  digitalWrite(REMOTE_COMMON, LOW);
+  
 }
 
 void startAdv(void)

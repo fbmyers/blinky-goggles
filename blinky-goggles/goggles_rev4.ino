@@ -27,6 +27,8 @@ void updateSpinner(){
     colorConstant(hues, sats);
     update(vals, sats, hues);
     delay(pause);
+
+    checkRemote();
   }
 
   nCycles = random(3) + 1;
@@ -43,6 +45,8 @@ void updateSpinner(){
     colorSpin(hues, sats);
     update(vals, sats, hues);
     delay(pause);
+    
+    checkRemote();
   }  
 
   nCycles = random(3) + 1;
@@ -57,6 +61,8 @@ void updateSpinner(){
     colorCycle(hues, sats);
     update(vals, sats, hues);
     delay(pause);
+    
+    checkRemote();
   }
 
   nCycles = random(3);
@@ -71,6 +77,8 @@ void updateSpinner(){
     colorCycle(hues, sats);
     update(vals, sats, hues);
     delay(pause);
+    
+    checkRemote();
   }  
   
   
@@ -87,5 +95,26 @@ void update(byte vals[], byte sats[], byte hues[]){
   neopixel1.show();
   neopixel2.show();
   
+}
+
+void checkRemote(){
+ while (digitalRead(REMOTE_BUTTON_1)==LOW) {
+    for (byte i=0; i<16; i++){
+      neopixel1.setPixelColor(i,255,0,255);
+      neopixel2.setPixelColor(i,255,0,255);
+      
+    }
+    neopixel1.show();
+    neopixel2.show();
+ }
+ while (digitalRead(REMOTE_BUTTON_2)==LOW) {
+    for (byte i=0; i<16; i++){
+      neopixel1.setPixelColor(i,0,0,255);
+      neopixel2.setPixelColor(i,0,0,255);
+      
+    }
+    neopixel1.show();
+    neopixel2.show();
+ } 
 }
 
